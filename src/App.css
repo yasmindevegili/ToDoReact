@@ -111,3 +111,9 @@ input[type="submit"] {
 .todo svg:hover {
   color: #6f86d6;
 }
+
+.ass{
+  color: grey;
+  font-size: 10px;
+  text-align: center;
+}

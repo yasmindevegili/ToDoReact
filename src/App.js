@@ -1,41 +1,30 @@
 import './App.css';
-import {useState, useEffect} from 'react'
-import {BsTrash, BsBookmarkCheck, BsBookmarkCheckFill} from "react-icons/bs"
-
-const API = "http://localhost:5000";
+import { useState, useEffect } from 'react';
+import { BsTrash, BsBookmarkCheck, BsBookmarkCheckFill } from "react-icons/bs";
 
 function App() {
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("");
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  //Load todos on page load
+
   useEffect(() => {
-    const loadData = async() => {
-      setLoading(true);
-
-      const res = await fetch(API + "/todos")
-        .then((res) => res.json())
-        .then((data) => data)
-        .catch((err) => console.log(err));
-
-      setLoading(false);
-      setTodos([]);
-      handleGetToDos();
-    };
-    loadData();
+    setLoading(true);
+    handleGetTodosFromLocalStorage();
+    setLoading(false);
   }, []);
 
-  const handleGetToDos = () => {
+  const handleGetTodosFromLocalStorage = () => {
+    const todosArray = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       const value = localStorage.getItem(key);
-      setTodos((prevState) => [...prevState, JSON.parse(value)]);
+      todosArray.push(JSON.parse(value));
     }
-  }
+    setTodos(todosArray);
+  };
 
-  const handleSubmit = async (e) => { //não recarrega a página no envio do fomrulário
+  const handleSubmit = (e) => {
     e.preventDefault();
     const todo = {
       id: Math.random(),
@@ -43,49 +32,26 @@ function App() {
       time,
       done: false,
     };
-    
-    //Envio para API
-    //  await fetch(API + "/todos", {
-    //   method: "POST",
-    //   body: JSON.stringify(todo),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // });
-    localStorage.setItem(todo.id, JSON.stringify(todo));
+    localStorage.setItem(todo.id.toString(), JSON.stringify(todo));
     setTodos((prevState) => [...prevState, todo]);
     setTitle("");
     setTime("");
   };
 
-  const handleDelete = async (id) => {
-  //   await fetch(API + "/todos/" + id, {
-  //     method: "DELETE",
-  //   });
-  //   setTodos((prevState) => prevState.filter((todo) => todo.id !== id));
-    localStorage.removeItem(id);
+  const handleDelete = (id) => {
+    localStorage.removeItem(id.toString());
     setTodos((prevState) => prevState.filter((todo) => todo.id !== id));
- };
+  };
 
-  const handleEdit = async (todo) => {
-    // todo.done = !todo.done;
-    
-    // const data = await fetch(API + "/todos/" + todo.id, {
-    //   method:"PUT",
-    //   body: JSON.stringify(todo),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // });
+  const handleEdit = (todo) => {
+    const updatedTodo = { ...todo, done: !todo.done };
+    localStorage.setItem(todo.id.toString(), JSON.stringify(updatedTodo));
+    setTodos((prevState) =>
+      prevState.map((t) => (t.id === todo.id ? updatedTodo : t))
+    );
+  };
 
-    // setTodos((prevState) => 
-    // prevState.map((t) => (t.id === data.id ? (t = data) : t))
-    // );
-    localStorage.setItem(todo.id, JSON.stringify(todo));
-    setTodos((prevState) => prevState.map((t) => (t.id === data.id ? (t = data) : t))
-    )};
-
-  if(loading){
+  if (loading) {
     return <p>Carregando...</p>
   }
 
@@ -99,19 +65,27 @@ function App() {
         <form onSubmit={handleSubmit}>
           <div className='form-control'>
             <label htmlFor='title'>O que você vai fazer?</label>
-            <input type='text' name='title' placeholder='Título da tarefa' onChange={
-              (e) => setTitle(e.target.value)}
-              value={title || ""} required
-              />
+            <input
+              type='text'
+              name='title'
+              placeholder='Título da tarefa'
+              onChange={(e) => setTitle(e.target.value)}
+              value={title || ""}
+              required
+            />
           </div>
           <div className='form-control'>
             <label htmlFor='time'>Duração:</label>
-            <input type='time' name='time' placeholder='Tempo estimado (em horas):' onChange={
-              (e) => setTime(e.target.value)}
-              value={time || ""} required
-              />
+            <input
+              type='time'
+              name='time'
+              placeholder='Tempo estimado (em horas):'
+              onChange={(e) => setTime(e.target.value)}
+              value={time || ""}
+              required
+            />
           </div>
-          <input type="submit" value="Criar tarefa"/>
+          <input type="submit" value="Criar tarefa" />
         </form>
       </div>
       <div className='list-todo'>
@@ -130,6 +104,7 @@ function App() {
         </div>
         ))}
       </div>
+      <p className='ass'>Yasmin Devegili 2023</p>
     </div>
   );
 }
